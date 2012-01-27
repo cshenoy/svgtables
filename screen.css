@@ -1,0 +1,34 @@
+.shape{
+    height: 100%;
+    width: 100%;
+}
+.hide {
+    display: none;
+}
+.control {
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    bottom: 2px;
+    cursor: pointer;
+}
+.resize {
+    background: top left no-repeat url(http://cdn1.iconfinder.com/data/icons/fugue/icon/arrow-resize-135.png);
+    right: 5px;
+    cursor: nw-resize;
+}
+.delete {
+    background: top left no-repeat url(http://cdn3.iconfinder.com/data/icons/uidesignicons/delete.png);
+    right: 26px;
+}
+
+.change-color {
+    background: top left no-repeat url(http://cdn1.iconfinder.com/data/icons/silk2/color_wheel.png);
+    right: 47px;
+}
+
+#table {
+	margin:0px 0 0 200px;
+	height: 300px;
+	width: 300px;
+}
