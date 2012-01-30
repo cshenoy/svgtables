@@ -1,116 +1,68 @@
-$(window).load(function(){
-    var Shape = Backbone.Model.extend({
-        defaults: { x:50, y:50, width:150, height:150, color:'black' },
-        setTopLeft: function(x,y) { this.set({ x:x, y:y }); },
-        setDim: function(w,h) { this.set({ width:w, height:h }); },
+$(function(){
+
+  $("#chairQ").bind("submit", function(e) {
+    var chairCheck = $("#addChairs").val();
+    var intRegex = /^\d+$/;
+    var intCheck = intRegex.test(chairCheck);
+
+    if( !intCheck ||  chairCheck >= 13 || chairCheck <= 3 ){
+      $("div.error").text("Sorry, please enter a valid number between 4 and 12.");
+      return false;
+    }
+
+    $("form, div.error").fadeOut(100);
+    e.preventDefault();
+
+    var R = Raphael("holder", "100%", "100%"),
+        tableRadius = 108,
+        chairRadius = 20,
+        radius_space = tableRadius + chairRadius,
+        x = 250,
+        y = 250,
+        ox = 0,
+        oy = 0,
+        xArc = x,
+        yArc = y/2,
+        r = R.circle(x, y, tableRadius).attr({fill: "rgb(34, 102, 255)", stroke: "none", opacity: .8}),
+        pi = Math.PI,
+        dragging = false,
+        numCircles;
+
+    var spacing = 2 * pi / chairCheck;
+
+    var circs = [r];
+
+    for(var i = 0; i < 2 * pi; i += spacing) {
+      var b = R.circle(x + Math.cos(i) * radius_space, y + Math.sin(i) * radius_space, chairRadius).attr({fill: "rgb(136,221,255)", stroke: "#000", opacity: 0.8});
+      circs.push(b); //add this circle to the array
+    }
+
+
+    var wholeTable = R.set(circs);  //place all circles in array in same canvas
+
+    wholeTable.mousedown(function(events){
+      ox = events.screenX;
+      oy = events.screenY;
+      wholeTable.attr({
+        opacity: 0.25
+      });
+
+      dragging = true;
     });
 
-    var ShapeView = Backbone.View.extend({ 
-        initialize: function() {
-            var r = Raphael("table");
-            r.circle(150,150,108).attr({stroke: "#000", "stroke-width": 4, fill: "rgba(253,20,98,0.7)"});
-            $('#table').mousemove(this, this.mousemove).mouseup(this, this.mouseup);
-            this.model.bind('change', this.updateView, this);
-            console.log("initializing");
-        },
-        render: function() {
-            $('#table').append(this.el);
-            $(this.el).html('<div class="shape"/>'
-                      + '<div class="control delete hide"/>'
-                      + '<div class="control change-color hide"/>'
-                      + '<div class="control resize hide"/>')
-                .css({ position: 'absolute', padding: '10px' });
-            this.updateView();
-            return this;
-        },
-        updateView: function() {
-            $(this.el).css({
-                left:       this.model.get('x'),
-                top:        this.model.get('y'),
-                width:      this.model.get('width') - 10,
-                height:     this.model.get('height') - 10 });
-            this.$('.shape').css({ background: this.model.get('color') });
-        },
-        events: {
-            'mouseenter': 'hoveringStart',
-            'mouseleave': 'hoveringEnd',
-            'mousedown': 'draggingStart',
-            'mousedown .resize': 'resizingStart',
-            'mousedown .change-color': 'changeColor',
-            'mousedown .delete': 'deleting',
-        },
-        hoveringStart: function () {
-            this.$('.control').removeClass('hide');
-            console.log('hoveringStart');
-        },
-        hoveringEnd: function () {
-            this.$('.control').addClass('hide');
-        },
-        draggingStart: function (e) {
-            this.dragging = true;
-            this.initialX = e.pageX - this.model.get('x');
-            this.initialY = e.pageY - this.model.get('y');
-            return false; // prevents text selection
-        },
-        resizingStart: function() {
-            this.resizing = true;
-            return false;
-        },
-        changeColor: function() {
-            this.model.set({ color: prompt('Enter color value', this.model.get('color')) });
-        },
-        deleting: function() {
-            this.model.collection.remove(this.model);
-        },
-        mouseup: function (e) {
-            if (!e.data) return;
-            var self = e.data;
-            self.dragging = self.resizing = false;
-        },
-        mousemove: function(e) {
-            if (!e.data) return;
-            var self = e.data;
-            if (self.dragging) {
-                self.model.setTopLeft(e.pageX - self.initialX, e.pageY - self.initialY);
-            } else if (self.resizing) {
-                self.model.setDim(e.pageX - self.model.get('x'), e.pageY - self.model.get('y'));
-            }
-        }
+    wholeTable.mousemove(function(events){ //not the best but will change later to optimize
+      if (dragging) {
+        wholeTable.translate(events.screenX - ox, events.screenY - oy);
+        ox = events.screenX;
+        oy = events.screenY;
+      }
     });
 
-    var Document = Backbone.Collection.extend({ model: Shape });
-
-    var DocumentView =  Backbone.View.extend({
-        id: 'table',
-        views: {},
-        initialize: function() {
-            this.collection.bind('add', this.added, this);
-            this.collection.bind('remove', this.removed, this);
-        },
-        render: function() {
-            return this;
-        },
-        added: function(m) {
-            this.views[m.cid] = new ShapeView({
-                model: m, 
-                id:'view_' + m.cid
-            }).render();                                        
-        },
-        removed: function(m) {
-            this.views[m.cid].remove();
-            delete this.views[m.cid];
-        }
+    wholeTable.mouseup(function(events){
+      dragging = false;
+      wholeTable.attr({ opacity:0.8 });
     });
 
-    var document = new Document();
-    var documentView = new DocumentView({ collection: document });
-    documentView.render();
+  });
 
-    $('#new-shape').click(function() {
-        document.add(new Shape());
-    });
-
-
-    //var table = Raphael("table");
-    //table.circle(150,150,108).attr({stroke: "#000", "stroke-width": 4, fill: "rgba(231,254,98,0.6)"});
 });
