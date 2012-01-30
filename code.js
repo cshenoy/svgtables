@@ -5,7 +5,7 @@ $(function(){
     var intRegex = /^\d+$/;
     var intCheck = intRegex.test(chairCheck);
 
-    if( !intCheck ||  chairCheck >= 13 || chairCheck <= 3 ){
+    if( !intCheck ||  chairCheck >= 13 || chairCheck <= 3 ) {
       $("div.error").text("Sorry, please enter a valid number between 4 and 12.");
       return false;
     }
