@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>I have a back bone</title>
+</head>
+<body>
+
+  <label>How many chairs do you want around that table?</label>
+  <input id="add-chairs" placeholder="How many chairs" type="text" />
+
+  <div id="holder" style="height:100%;width:100%;"></div>
+  <script type="text/template" id="yo">
+    <div class="todo <%= done ? 'done' : '' %>" id="holders">
+      <div class="display">
+        <input class="check" type="checkbox" <%= done ? 'checked="checked"' : '' %> />
+        <div class="todo-text"></div>
+        <span class="todo-destroy"></span>
+      </div>
+      <div class="edit">
+        <input class="todo-input" type="text" value="" />
+      </div>
+    </div>
+  </script>
+
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.0.0/raphael-min.js"></script>
+  <script src="http://ajax.cdnjs.com/ajax/libs/underscore.js/1.1.4/underscore-min.js"></script>
+  <script src="http://ajax.cdnjs.com/ajax/libs/backbone.js/0.3.3/backbone-min.js"></script>
+  <script>
+  $(function(){
+    
+    window.Chair = Backbone.Model.extend({
+      //Create a model to hold friend atribute
+      defaults: function(){
+        return {
+          number: 4
+        };
+      }
+    });
+    
+    window.ChairSort = Backbone.Collection.extend({
+
+      model: Chair
+
+    });
+
+    window.Chairs = new ChairSort;
+
+    window.ChairAtTable = Backbone.View.extend({
+
+      el: $("#table"),
+
+    });
+    
+    window.AppView = Backbone.View.extend({
+      el: $("body"),
+      initialize: function () {
+        this.input = this.$("#add-chairs");
+        //console.log(this, this.input);
+
+
+        //Chairs.fetch();
+        //Create a friends collection when the view is initialized.
+        //Pass it a reference to this view to create a connection between the two
+      },
+      events: {
+        "mousedown":  "moveTable",
+      },
+
+      moveTable: function(){
+        //console.log('move me!');
+      },
+
+      showPrompt: function () {
+        var friend_name = prompt("Who is your friend?");
+        var friend_model = new Friend({ name: friend_name });
+        //Add a new friend model to our friend collection
+        this.friends.add( friend_model );
+      },
+      addChair: function (model) {
+        //The parameter passed is a reference to the model that was added
+        $("#friends-list").append("<li>" + model.get('name') + "</li>");
+        //Use .get to receive attributes of the model
+      }
+    });
+    
+    window.App = new AppView;
+
+    var R = Raphael("holder", "100%", "100%"),
+        radius = 108,
+        x = 250,
+        y = 250,
+        ox = 0,
+        oy = 0,
+        xArc = x,
+        yArc = y/2,
+        r = R.circle(x, y, radius).attr({fill: "hsb(0, 1, 1)", stroke: "none", opacity: .8}),
+        pi = Math.PI,
+        dragging = false,
+        numCircles;
+
+    var start = function () {
+      this.ox = this.attr("cx");
+      this.oy = this.attr("cy");
+    },
+    move = function (dx, dy) {
+      this.attr({cx: this.ox + dx, cy: this.oy + dy});
+    };
+
+    numCircles = 10;
+    var spacing = 2 * pi / numCircles;
+    var circs = [r];
+    for(var i = 0; i < 2 * pi; i += spacing) {
+      var b = R.circle(x + Math.cos(i) * radius, y + Math.sin(i) * radius, 20).attr({fill: "hsb(0,1,1)", stroke: "#000", opacity: 0.8});
+      circs.push(b);
+    }
+    var wholeTable=R.set(circs);
+
+    wholeTable.mousedown(function(event){
+      ox = event.screenX;
+      oy = event.screenY;
+      wholeTable.attr({
+        opacity: 0.25
+      });
+      dragging = true;
+    });
+
+    wholeTable.mousemove(function(event){
+      if (dragging) {
+        wholeTable.translate(event.screenX - ox, event.screenY - oy);
+        ox = event.screenX;
+        oy = event.screenY;
+      }
+    });
+
+    wholeTable.mouseup(function(event){
+      dragging = false;
+      wholeTable.attr({ opacity:0.8 });
+    });
+  });
+  </script>
+</body>
+</html>
