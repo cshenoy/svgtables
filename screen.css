@@ -108,6 +108,7 @@ form#chairQ {
     width: 240px;
     height: 100px;
     margin: -50px 0 0 -120px;
+    z-index: 5;
 }
 
 form#chairQ label {
@@ -149,7 +150,7 @@ form#chairQ input#addChairs:focus {
 
 #holder {
     width:100%;
-    height:100%;
+    height:500px;
 }
 
 div.error {
